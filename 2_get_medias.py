@@ -74,6 +74,7 @@ def download_media(tweet_id, type, url):
         with open(file_path, 'wb') as fout:
             fout.write(response.content)
 
+        print(f"      media url: {url}")
         print(f"      file path: {file_path}")
         return (sha1, extension)
 
@@ -89,6 +90,12 @@ def download_media(tweet_id, type, url):
 for doc in collection.find({"media": {'$exists': True}}):
     pictures = []
     videos = []
+
+    if (len(doc["pictures"]) if "pictures" in doc else 0) + (len(doc["videos"]) if "videos" in doc else 0) == len(doc["media"]):
+        print(
+            f"Media already downloaded for tweet {get_tweet_url(doc['source']['id_str'])}"
+        )
+        continue
 
     for m in doc["media"]:
         symbol = None
