@@ -43,9 +43,9 @@ MEDIA_TYPE_VIDEO = 'v'
 
 
 def get_file_extension(type, url):
-    if type == 'p':
+    if type == MEDIA_TYPE_PICTURE:
         return Path(url.split('/')[-1]).suffix
-    elif type == 'v':
+    elif type == MEDIA_TYPE_VIDEO:
         p = url.split('/')[-1]
         p = p.split('?')[0]
         return Path(p).suffix
