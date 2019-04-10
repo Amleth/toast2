@@ -1,5 +1,6 @@
 import argparse
 import configparser
+import os
 from pymongo import MongoClient
 import requests
 from selenium.webdriver.common.keys import Keys
@@ -24,7 +25,7 @@ args = parser.parse_args()
 config = configparser.ConfigParser()
 config.read("toast.conf")
 symbol = config.get("Conversations", "symbol")
-geckodriver_path = config.get("Conversations", "geckodriver_path")
+geckodriver_path = os.path.expanduser(config.get("Conversations", "geckodriver_path"))
 
 # MongoDB
 database_name = args.db

@@ -1,47 +1,60 @@
 # TOAST : outils pour l'analyse sémiotique de Twitter (version 2)
 
-## Principes
+Ce dépôt regroupe des outils permettant de constituer des corpus de tweets. Des esquisses de méthodes d'analyse sont en cours de développement.
 
-- captation via la _Streaming API_ avec [Tweepy](http://www.tweepy.org/)
-- stockage des _tweets_ sans modification dans une base [MongoDB](https://www.mongodb.com/)
-- enrichissement du corpus (images & conversations) par déclenchement manuel :
-  - téléchargement des images sur le disque dur local et calcul du [SHA1](https://en.wikipedia.org/wiki/SHA-1) pour dédoublonnage technique
-  - téléchargement des conversations (_scraping_ avec [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/))
+Ces travaux techniques s'originent dans un travail de recherche conduit avec Virginie Jullliard. Voir par exemple l'article [« Entre informatique et sémiotique. Les conditions techno-méthodologiques d’une analyse de controverse sur Twitter », revue *Réseaux*, 2017/4 (n° 204)](https://www.cairn.info/revue-reseaux-2017-4-page-35.htm).
 
-## Captation
+## Généralités
 
-- ajuster la configuration :
-  - [keys & tokens personnels des API Twitter](https://developer.twitter.com/en/apps) de l'application => `secret.conf` (renommer `secret.conf.dist`)
-  - configuration générale => `toast.conf`
-- lancer MongoDB :
+- L'ensemble du code source est écrit en [Python 3.7.x](https://docs.python.org/3/tutorial/index.html).
+- Les données collectées ou transformées sont stockées dans une base [MongoDB](https://www.mongodb.com/).
+- Seule une connaissance basique de l'API MongoDB est mobilisée (voir par exemple [ce tutoriel Python/MongoDB](https://www.w3schools.com/python/python_mongodb_getstarted.asp)).
 
-```mkdir -p ~/mongodata && mongod --dbpath=/Users/<votre compte utilisateur ou utilisatrice>/mongodata```
+## Captation des tweets
 
-- lancer la captation (stop : `Ctrl+C`) :
+- La captation des tweets s'effectue via la [Streaming API](https://developer.twitter.com/en/docs/tweets/filter-realtime/overview), qui expose l'information au format [JSON](https://www.json.org/). Il faut déclarer une appllication auprès de Twitter [ici](https://developer.twitter.com/en/apps) (un comte Twitter est requis).
+- Les keys & tokens personnels des API Twitter doivent être déclarés dans `secret.conf` (renommer `secret.conf.dist`).
+- Les tweets captés sont stockés sans modification, ce qui est facilité par le fait que MongoDB supporte nativement le format JSON.
+- La connexion à la Streaming API en Python se fait avec la bibliothèque [Tweepy](http://www.tweepy.org/). Voir surtout [la page consacrée à la Streaming API](https://tweepy.readthedocs.io/en/v3.5.0/streaming_how_to.html).
+- Lancer MongoDB :
+```
+mkdir -p /Users/?/mongodata && mongod --dbpath=/Users/?/mongodata
+```
+- Déclenchement de la captation (stop : `Ctrl+C`) :
+```
+python3 1_collect_tweets.py --db test --coll test --track china,eurorack
+```
 
-```python3 1_collect_tweets.py --db test --coll test --track china,eurorack```
+## Traitement
 
-## Enrichissement du corpus
-
-### Images
-
-- télécharger les images : `python3 2_get_medias.py --db test --coll test --dldir /Users/amleth/Desktop`
-
-### Conversations
-
-**_TODO_**
-
-### Outils
-
-Export Excel :
-
-```python3 mongodb_to_excel.py --db test --coll test --xlsxfile /Users/amleth/Desktop/tralala.xlsx```
-
-Génération d'une « sous-collection » par filtrage du texte :
-
+- Génération d'une « sous-collection » par filtrage du texte :
 ```mongo mongo_text_filter.js```
 
-## Quelques éléments de documentation technique
+## Enrichissement : téléchargement des images & vidéos
 
-- [Didacticiel Python](https://docs.python.org/3/tutorial/index.html)
-- [Didacticiel Python—MongoDB](https://www.w3schools.com/python/python_mongodb_getstarted.asp)
+- Déclenchement :
+```
+python3 2_get_medias.py --db test --coll test --dldir /Users/amleth/Desktop
+```
+- Les fichiers binaires téléchargés (images, vidéos) sont stockés sur le disque dur.
+- Le [SHA1](https://en.wikipedia.org/wiki/SHA-1) de chaque fichier est calculté pour opérer un dédoublonnage technique basique.
+
+## Enrichissement : téléchargement des conversations
+
+- Télécharger [geckodriver](https://github.com/mozilla/geckodriver/releases) et déclarer le chemin dans `toast.conf`.
+- Déclenchement :
+```
+python3 3_scrap_conversations.py --db test --coll test
+```
+
+## Consultation
+
+- Interface graphique MongoDB [Robo3T](https://robomongo.org/).
+- Export Excel :
+```
+python3 mongodb_to_excel.py --db test --coll test --xlsxfile ~/Desktop/tralala.xlsx
+```
+
+## Pistes pour l'analyse
+
+TODO
