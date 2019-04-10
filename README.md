@@ -22,7 +22,7 @@ mkdir -p /Users/?/mongodata && mongod --dbpath=/Users/?/mongodata
 ```
 - Déclenchement de la captation (stop : `Ctrl+C`) :
 ```
-python3 1_collect_tweets.py --db test --coll test --track china,eurorack
+python3 collecte_1_tweets.py --db test --coll test --track china,eurorack
 ```
 
 ## Traitement
@@ -34,7 +34,7 @@ python3 1_collect_tweets.py --db test --coll test --track china,eurorack
 
 - Déclenchement :
 ```
-python3 2_get_medias.py --db test --coll test --dldir /Users/amleth/Desktop
+python3 collecte_2_medias.py --db test --coll test --dldir /Users/amleth/Desktop
 ```
 - Les fichiers binaires téléchargés (images, vidéos) sont stockés sur le disque dur.
 - Le [SHA1](https://en.wikipedia.org/wiki/SHA-1) de chaque fichier est calculté pour opérer un dédoublonnage technique basique.
@@ -44,7 +44,7 @@ python3 2_get_medias.py --db test --coll test --dldir /Users/amleth/Desktop
 - Télécharger [geckodriver](https://github.com/mozilla/geckodriver/releases) et déclarer le chemin dans `toast.conf`.
 - Déclenchement :
 ```
-python3 3_scrap_conversations.py --db test --coll test
+python3 collecte_3_conversations.py --db test --coll test
 ```
 
 ## Consultation
