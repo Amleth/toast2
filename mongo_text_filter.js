@@ -1,23 +1,22 @@
+coll = 'test'
+coll_filtered = 'test_filtered'
+
 conn = new Mongo()
-db = conn.getDB('test')
-db.nom_de_la_collection.drop()
-db.nom_de_la_collection_filtree.ensureIndex({
+db = conn.getDB(coll)
+db[coll_filtered].drop()
+db[coll_filtered].ensureIndex({
   fulltext: 'text'
 })
 
-c = db.nom_de_la_collection.aggregate([
+c = db[coll].aggregate([
   {
     $match: {
-      $or: [{ fulltext: /blip/gim }, { fulltext: /blop/gim }]
+      $or: [{ fulltext: /china/gim }, { fulltext: /music/gim }]
     }
   },
   {
-    $out: 'nom_de_la_collection_filtree'
+    $out: coll_filtered
   }
 ])
 
-while (c.hasNext()) {
-  print(tojson(c.next()))
-}
-
-print(db.nom_de_la_collection_fitree.find().count())
+print(db[coll_filtered].find().count())

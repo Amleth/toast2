@@ -1,9 +1,14 @@
-import json
-import pprint
+import argparse
 from pymongo import MongoClient
 import xlsxwriter
 
-workbook = xlsxwriter.Workbook("data.xlsx")
+parser = argparse.ArgumentParser()
+parser.add_argument("--db")
+parser.add_argument("--coll")
+parser.add_argument("--xlsxfile")
+args = parser.parse_args()
+
+workbook = xlsxwriter.Workbook(args.xlsxfile)
 worksheet = workbook.add_worksheet()
 
 bold = workbook.add_format({"bold": True})
@@ -23,73 +28,78 @@ worksheet.write(0, 12, "hashtags", bold)
 worksheet.write(0, 13, "urls", bold)
 
 client = MongoClient()
-db = client.si90_pma
-collection = db.si90_pma_25soir
+db = client[args.db]
+collection = db[args.coll]
 
 line = 1
 
 for t in collection.find():
+    #
     # READ
+    #
 
-    j = t["raw"]
+    source = t["source"]
 
-    created_at = j["created_at"]
+    device = source["source"]
 
-    id_str = j["id_str"]
+    created_at = source["created_at"]
+
+    id_str = source["id_str"]
 
     link = f"http://www.twitter.com/statuses/{id_str}"
 
     retweeted_status_created_at = None
     retweeted_status_id_str = None
-    in_reply_to_status_id_str = j["in_reply_to_status_id_str"]
-    if "retweeted_status" in j:
-        retweeted_status_created_at = j["retweeted_status"]["created_at"]
-        retweeted_status_id_str = j["retweeted_status"]["id_str"]
-
-    source = j["source"]
+    in_reply_to_status_id_str = source["in_reply_to_status_id_str"]
+    if "retweeted_status" in source:
+        retweeted_status_created_at = source["retweeted_status"]["created_at"]
+        retweeted_status_id_str = source["retweeted_status"]["id_str"]
 
     text = t["fulltext"]
 
-    timestamp_ms = j["timestamp_ms"]
+    timestamp_ms = source["timestamp_ms"]
 
-    user_id_str = j["user"]["id_str"]
-    user_name = j["user"]["name"]
-    user_screen_name = j["user"]["screen_name"]
-    user_description = j["user"]["description"]
+    user_id_str = source["user"]["id_str"]
+    user_name = source["user"]["name"]
+    user_screen_name = source["user"]["screen_name"]
+    user_description = source["user"]["description"]
 
     hashtags = []
-    if "retweeted_status" in j:
-        if not 'extended_tweet' in j['retweeted_status']:
-            hashtags = j['retweeted_status']['entities']['hashtags']
+    if "retweeted_status" in source:
+        if not 'extended_tweet' in source['retweeted_status']:
+            hashtags = source['retweeted_status']['entities']['hashtags']
         else:
-            hashtags = j['retweeted_status']['extended_tweet']['entities']['hashtags']
+            hashtags = source['retweeted_status']['extended_tweet']['entities']['hashtags']
     else:
-        if not 'extended_tweet' in j:
-            hashtags = j['entities']['hashtags']
+        if not 'extended_tweet' in source:
+            hashtags = source['entities']['hashtags']
         else:
-            hashtags = j['extended_tweet']['entities']['hashtags']
+            hashtags = source['extended_tweet']['entities']['hashtags']
     hashtags = list(map(lambda x: f"#{x['text']}", hashtags))
 
     urls = []
-    if "retweeted_status" in j:
-        if not 'extended_tweet' in j['retweeted_status']:
-            urls = j['retweeted_status']['entities']['urls']
+    if "retweeted_status" in source:
+        if not 'extended_tweet' in source['retweeted_status']:
+            urls = source['retweeted_status']['entities']['urls']
         else:
-            urls = j['retweeted_status']['extended_tweet']['entities']['urls']
+            urls = source['retweeted_status']['extended_tweet']['entities']['urls']
     else:
-        if not 'extended_tweet' in j:
-            urls = j['entities']['urls']
+        if not 'extended_tweet' in source:
+            urls = source['entities']['urls']
         else:
-            urls = j['extended_tweet']['entities']['urls']
+            urls = source['extended_tweet']['entities']['urls']
     urls = list(map(lambda x: f"URL-{x['expanded_url']}", urls))
 
+    #
     # WRITE
+    #
+
     worksheet.write(line, 0, link)
     worksheet.write(line, 1, created_at)
     worksheet.write(line, 2, id_str)
     worksheet.write(line, 3, retweeted_status_created_at)
     worksheet.write(line, 4, retweeted_status_id_str)
-    worksheet.write(line, 5, source)
+    worksheet.write(line, 5, device)
     worksheet.write(line, 6, text)
     worksheet.write(line, 7, timestamp_ms)
     worksheet.write(line, 8, user_id_str)

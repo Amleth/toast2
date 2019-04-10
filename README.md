@@ -13,19 +13,33 @@
 - ajuster la configuration :
   - [keys & tokens personnels des API Twitter](https://developer.twitter.com/en/apps) de l'application => `secret.conf` (renommer `secret.conf.dist`)
   - configuration générale => `toast.conf`
-- lancer MongoDB : `mkdir -p ~/mongodata && mongod --dbpath=/Users/<votre compte utilisateur ou utilisatrice>/mongodata`
-- lancer la captation : `python3 1_collect_tweets.py` (stop : `Ctrl+C`)
-- besoin de filtrer le corpus de captation ? : lire & ajuster `mongo_text_filter.js`, puis exécuter `mongo mongo_text_filter.js`
+- lancer MongoDB :
+
+```mkdir -p ~/mongodata && mongod --dbpath=/Users/<votre compte utilisateur ou utilisatrice>/mongodata```
+
+- lancer la captation (stop : `Ctrl+C`) :
+
+```python3 1_collect_tweets.py --db test --coll test --track china,eurorack```
 
 ## Enrichissement du corpus
 
 ### Images
 
-- télécharger les images : `python3 2_get_medias.py`
+- télécharger les images : `python3 2_get_medias.py --db test --coll test --dldir /Users/amleth/Desktop`
 
 ### Conversations
 
 **_TODO_**
+
+### Outils
+
+Export Excel :
+
+```python3 mongodb_to_excel.py --db test --coll test --xlsxfile /Users/amleth/Desktop/tralala.xlsx```
+
+Génération d'une « sous-collection » par filtrage du texte :
+
+```mongo mongo_text_filter.js```
 
 ## Quelques éléments de documentation technique
 
